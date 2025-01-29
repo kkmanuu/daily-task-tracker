@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Button, Card, Form, Badge } from "react-bootstrap";
-import { TrashFill } from "react-bootstrap-icons";
+import { Button, Card, Form, Badge, Container, Row, Col } from "react-bootstrap";
+import { TrashFill, PencilFill } from "react-bootstrap-icons";
 import axios from "axios";
 
 const Todo = () => {
@@ -53,35 +53,51 @@ const Todo = () => {
     }
   };
 
+  const handleEditTodo = async (id) => {
+    try {
+      await axios.put(`http://localhost:5000/todos/${id}`);
+      setTodos(todos.filter((todo) => todo.id !== id));
+    } catch (err) {
+      console.error("Error editing todo:", err);
+    }
+  };
+
   return (
-    <div className="container mt-5">
-      <div className="text-center py-5 text-white" style={{ background: "linear-gradient(90deg, #007bff, #6610f2)" }}>
+    <Container className="mt-5 p-4 shadow-lg rounded" style={{ backgroundColor: "#f8f9fa", maxWidth: "800px" }}>
+      <div className="text-center py-4 text-white rounded-top" style={{ background: "linear-gradient(90deg, #007bff, #6610f2)" }}>
         <h1>📋 Todo Planner</h1>
         <p>Organize your tasks and stay productive!</p>
       </div>
-      <Card className="shadow mt-4">
+
+      <Card className="mt-4 shadow-sm">
         <Card.Header className="bg-dark text-white">
           <h5>Add New Task</h5>
         </Card.Header>
         <Card.Body>
           <Form onSubmit={handleAddTodo}>
-            <Form.Group className="mb-3">
-              <Form.Label>Date:</Form.Label>
-              <Form.Control
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Day:</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="e.g., Monday"
-                value={day}
-                onChange={(e) => setDay(e.target.value)}
-              />
-            </Form.Group>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Date:</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Day:</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="e.g., Monday"
+                    value={day}
+                    onChange={(e) => setDay(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
             <Form.Group className="mb-3">
               <Form.Label>Activity:</Form.Label>
               <Form.Control
@@ -110,15 +126,15 @@ const Todo = () => {
       </Card>
 
       <div className="mt-5">
-        <h4 className="mb-3">Your Tasks</h4>
+        <h4 className="mb-4">Your Tasks</h4>
         {todos.length > 0 ? (
-          <div className="row">
+          <Row>
             {todos.map((todo) => (
-              <div className="col-md-6 mb-4" key={todo.id}>
+              <Col md={12} key={todo.id} className="mb-3">
                 <Card className="shadow-sm">
                   <Card.Body>
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div>
+                    <Row className="align-items-center">
+                      <Col md={8}>
                         <h5>{todo.activity}</h5>
                         <p className="mb-1">
                           <strong>Date:</strong> {todo.date}
@@ -129,25 +145,35 @@ const Todo = () => {
                         <Badge bg={todo.status === "Done" ? "success" : "danger"}>
                           {todo.status}
                         </Badge>
-                      </div>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => handleDeleteTodo(todo.id)}
-                      >
-                        <TrashFill />
-                      </Button>
-                    </div>
+                      </Col>
+                      <Col md={4} className="text-end">
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          className="me-2"
+                          onClick={() => handleEditTodo(todo.id)}
+                        >
+                          <PencilFill />
+                        </Button>
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={() => handleDeleteTodo(todo.id)}
+                        >
+                          <TrashFill />
+                        </Button>
+                      </Col>
+                    </Row>
                   </Card.Body>
                 </Card>
-              </div>
+              </Col>
             ))}
-          </div>
+          </Row>
         ) : (
           <p className="text-muted">No tasks to display. Add some tasks to get started!</p>
         )}
       </div>
-    </div>
+    </Container>
   );
 };
 

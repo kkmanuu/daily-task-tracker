@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Button, Card, Form, Badge, Container, Row, Col } from "react-bootstrap";
 import { TrashFill, PencilFill } from "react-bootstrap-icons";
-import axios from "axios";
+import axios from "axios"; 
+import { addTodo } from "./addTodo"; 
+import { deleteTodo } from "./deleteTodo";
 
 const Todo = () => {
   const [todos, setTodos] = useState([]);
@@ -10,6 +12,7 @@ const Todo = () => {
   const [activity, setActivity] = useState("");
   const [status, setStatus] = useState("Not Done");
   const [error, setError] = useState("");
+  const [editingTodo, setEditingTodo] = useState(null);
 
   useEffect(() => {
     const fetchTodos = async () => {
@@ -33,8 +36,8 @@ const Todo = () => {
 
     const newTodo = { date, day, activity, status };
     try {
-      const response = await axios.post("http://localhost:5000/todos", newTodo);
-      setTodos([...todos, response.data]);
+      const addedTodo = await addTodo(newTodo); 
+      setTodos([...todos, addedTodo]);
       setDate("");
       setDay("");
       setActivity("");
@@ -46,19 +49,45 @@ const Todo = () => {
 
   const handleDeleteTodo = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/todos/${id}`);
+      await deleteTodo(id); 
       setTodos(todos.filter((todo) => todo.id !== id));
     } catch (err) {
       console.error("Error deleting todo:", err);
     }
   };
 
-  const handleEditTodo = async (id) => {
+  const handleEditTodo = (todo) => {
+    setEditingTodo(todo);
+    setDate(todo.date);
+    setDay(todo.day);
+    setActivity(todo.activity);
+    setStatus(todo.status);
+  };
+
+  const handleUpdateTodo = async (e) => {
+    e.preventDefault();
+    if (!date || !day || !activity) {
+      setError("All fields are required.");
+      return;
+    }
+    setError("");
+
+    const updatedTodo = { date, day, activity, status };
     try {
-      await axios.put(`http://localhost:5000/todos/${id}`);
-      setTodos(todos.filter((todo) => todo.id !== id));
+      const response = await axios.put( 
+        `http://localhost:5000/todos/${editingTodo.id}`,
+        updatedTodo
+      );
+      setTodos(
+        todos.map((todo) => (todo.id === editingTodo.id ? response.data : todo))
+      );
+      setEditingTodo(null); // Clear the editing state
+      setDate("");
+      setDay("");
+      setActivity("");
+      setStatus("Not Done");
     } catch (err) {
-      console.error("Error editing todo:", err);
+      console.error("Error updating todo:", err);
     }
   };
 
@@ -71,10 +100,10 @@ const Todo = () => {
 
       <Card className="mt-4 shadow-sm">
         <Card.Header className="bg-dark text-white">
-          <h5>Add New Task</h5>
+          <h5>{editingTodo ? "Edit Task" : "Add New Task"}</h5>
         </Card.Header>
         <Card.Body>
-          <Form onSubmit={handleAddTodo}>
+          <Form onSubmit={editingTodo ? handleUpdateTodo : handleAddTodo}>
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
@@ -119,8 +148,23 @@ const Todo = () => {
             </Form.Group>
             {error && <p className="text-danger">{error}</p>}
             <Button type="submit" variant="primary" className="w-100">
-              Add Task
+              {editingTodo ? "Update Task" : "Add Task"}
             </Button>
+            {editingTodo && (
+              <Button
+                variant="secondary"
+                className="w-100 mt-2"
+                onClick={() => {
+                  setEditingTodo(null);
+                  setDate("");
+                  setDay("");
+                  setActivity("");
+                  setStatus("Not Done");
+                }}
+              >
+                Cancel Edit
+              </Button>
+            )}
           </Form>
         </Card.Body>
       </Card>
@@ -151,7 +195,7 @@ const Todo = () => {
                           variant="outline-primary"
                           size="sm"
                           className="me-2"
-                          onClick={() => handleEditTodo(todo.id)}
+                          onClick={() => handleEditTodo(todo)}
                         >
                           <PencilFill />
                         </Button>

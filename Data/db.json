@@ -1,3 +1,11 @@
 {
-  "todos": []
+  "todos": [
+    {
+      "id": "dbd5",
+      "date": "2025-02-03",
+      "day": "Monday",
+      "activity": "coding",
+      "status": "Not Done"
+    }
+  ]
 }

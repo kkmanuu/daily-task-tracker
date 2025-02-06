@@ -1,0 +1,18 @@
+{
+  "todos": [
+    {
+      "id": "dbd5",
+      "date": "2025-02-03",
+      "day": "Monday",
+      "activity": "coding",
+      "status": "Not Done"
+    },
+    {
+      "date": "2025-02-03",
+      "day": "Monday",
+      "activity": "shoppings",
+      "status": "Not Done",
+      "id": "320a"
+    }
+  ]
+}
